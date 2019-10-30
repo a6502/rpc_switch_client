@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+# stdlib
+import argparse
+import asyncio
+import json
+import logging
+import pprint
+import sys
+import time
+
+#pypi
+#import pynetstring
+
+# mine
+import rpc_switch_client
+
+# globals
+pp = pprint.PrettyPrinter(indent=4)
+client = None
+debug = True # False
+
+async def add(reqid, args):
+    counter = args['counter']
+    step = args.get('step', 1)
+    await asyncio.sleep(1)
+    logging.info(f'{reqid}: adding {step} to {counter}')
+    return counter + step
+
+def div(reqid, args):
+    return args['dividend'] / args['divisor']
+
+async def main():
+    client = rpc_switch_client.RPC_Switch_Client(
+        #who = 'deArbeider',
+        #token = 'doetDingen',
+        who = 'derArbeitnehmer',
+        token = 'machtDinge',
+    )
+
+    ret = -1
+    while ret != 0:
+        logging.info('connecting..')
+        await client.connect()
+        await client.announce(method = 'bar.add', cb = add, mode='async')
+        await client.announce(method = 'bar.div', cb = div)
+        async def bla():
+            await asyncio.sleep(30)
+            await client.stop()
+            await client.close()
+        #t = asyncio.create_task(bla())
+        #ret = await asyncio.gather(t, client.work())
+        logging.info('starting work()')
+        ret = await client.work()
+        logging.info(f'work returned {ret}')
+        time.sleep(1)
+        ret = 0
+    logging.info(f'done? {ret!s}')
+    return ret
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description = 'do some RPC-Switch work')
+    parser.add_argument('--debug', '-d', action='store_true')
+    args = parser.parse_args()
+    debug = args.debug
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    asyncio.run(main(), debug = debug)
+   
+
