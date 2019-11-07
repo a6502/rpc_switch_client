@@ -44,12 +44,6 @@ async def main():
         await client.connect()
         await client.announce(method = 'bar.add', cb = add, mode='async')
         await client.announce(method = 'bar.div', cb = div)
-        async def bla():
-            await asyncio.sleep(30)
-            await client.stop()
-            await client.close()
-        #t = asyncio.create_task(bla())
-        #ret = await asyncio.gather(t, client.work())
         logging.info('starting work()')
         ret = await client.work()
         logging.info(f'work returned {ret}')
