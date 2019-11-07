@@ -3,7 +3,6 @@
 import asyncio
 import base64
 import hashlib
-##import inspect
 import json
 import logging
 import os
@@ -11,7 +10,6 @@ import pprint
 import ssl as ssl2  # ugh
 import sys
 import traceback
-##import time
 
 # pypi
 import pynetstring
@@ -199,13 +197,12 @@ class RPC_Switch_Client:
                 return WORK_CONNECTION_CLOSED
             # self._debug(f"_handle got data: {data!r}")
             decoded_list = self._decoder.feed(data)  # FIXME: try?
-            new_list = []
             for item in decoded_list:
-                id = None
+                reqid = None
                 try:
                     try:
                         jrpc = json.loads(item.decode())
-                    except JSONDecodeError:
+                    except json.JSONDecodeError:
                         raise JSON_RPC_Error(PARSE_ERROR, "invalid JSON")
                     self._debug(f"R {jrpc!r}")
                     if not isinstance(jrpc, dict):
@@ -277,17 +274,18 @@ class RPC_Switch_Client:
             assert rpcswitch["vcookie"] == "eatme"
             ret["rpcswitch"] = rpcswitch
             try:
-                if m["mode"] == "async":
+                mode = m["mode"]
+                if mode == "async":
                     res = [
                         RES_WAIT,
                         await self._async_wrapper(rpcswitch, m["cb"], reqid, params),
                     ]
-                elif m["mode"] == "sync":
+                elif mode == "sync":
                     res = [RES_OK, m["cb"](reqid, params)]
-                elif m["mode"] == "subproc":
+                elif mode == "subproc":
                     res = [RES_ERROR, "mode subproc not implemented"]
                 else:
-                    res = [RES_ERROR, f"invalid mode {mode}"]
+                    res = [RES_ERROR, f"invalid mode '{mode}'"]
             except Exception:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 res = [RES_ERROR, traceback.format_exception(exc_type, exc_value, exc_traceback)]
@@ -299,9 +297,6 @@ class RPC_Switch_Client:
             self._debug(f"N {ret!r}")
             return
         self._debug(f"W {ret!r}")
-        #res = json.dumps(res)
-        #res = pynetstring.encode(res.encode())
-        #self.writer.write(res)
         self.writer.write(pynetstring.encode(json.dumps(ret).encode()))
 
     async def _async_wrapper(self, rpcswitch, cb, reqid, params):
@@ -453,7 +448,7 @@ class RPC_Switch_Client:
         self.__handle_task.cancel()
 
     async def close(self):
-        self._debug("closing down..");
+        self._debug("closing down..")
         self.writer.close()
         await self.writer.wait_closed()
 

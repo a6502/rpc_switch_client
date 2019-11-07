@@ -1,7 +1,19 @@
  ￼
 # general things to ignore
+.Python
+.eggs/
+.installed.cfg
 build/
+develop-eggs/
 dist/
+eggs/
+lib/
+lib64/
+parts/
+pip-wheel-metadata/
+share/python-wheels/
+sdist/
+wheels/
 *.egg-info/
 *.egg
 *.py[cod]
@@ -12,3 +24,14 @@ __pycache__/
 # due to using tox and pytest
 .tox
 .cache
+.pytest_cache/
+
+# Environments
+env/
+venv/
+
+# IDEs
+.idea
+
+# Installer logs
+pip-log.txt
