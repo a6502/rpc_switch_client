@@ -351,16 +351,11 @@ class RPC_Switch_Client:
             c.set_exception(RPC_Switch_Client_Error(jrpc["error"]))
         # else?
 
-    def _id(self):
-        self.__id += 1
-        return self.__id
-
     #
     # public stuff
     #
 
     async def connect(self):
-        # fixme: use a dict instead?
         if self.tls: 
             self._debug(f"doing ssl {self.tls_server_hostname}")
             reader, writer = await asyncio.open_connection(
@@ -453,14 +448,20 @@ class RPC_Switch_Client:
         await self.writer.wait_closed()
 
     async def call(self, method, params):
-        id = self._id()
+        f = self.__loop.create_future()
+        self.__id += 1
+        reqid = (base64.b64encode(
+                hashlib.md5(
+                    f"{self.__id}{method}{params!s}{id(f)}".encode("utf-8")
+                ).digest()
+            ).decode("utf-8").strip("="))
         req = {
                "jsonrpc": "2.0",
                "method": method,
                "params": params,
-               "id": id
+               "id": reqid
             }
         self._debug(f"W {req!r}")
-        self.__calls[id] = f = self.__loop.create_future()
+        self.__calls[reqid] = f
         self.writer.write(pynetstring.encode(json.dumps(req).encode()))
         return await f
