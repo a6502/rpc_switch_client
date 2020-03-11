@@ -309,7 +309,7 @@ class RPC_Switch_Client:
 
         def done(t):
             self._debug(f"in done handler for waitid {waitid} and task {t!s}")
-            status = RES_OK;
+            status = RES_OK
             try:
                 result = t.result()
             except Exception:
@@ -320,7 +320,7 @@ class RPC_Switch_Client:
                 "jsonrpc": "2.0",
                 "method": "rpcswitch.result",
                 "rpcswitch": rpcswitch,
-                "params": [RES_OK, waitid, result],
+                "params": [status, waitid, result],
             }
             self._debug(f"W {req!r}")
             self.writer.write(pynetstring.encode(json.dumps(req).encode()))
