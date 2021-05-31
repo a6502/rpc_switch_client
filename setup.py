@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rpc-switch-client-a6502",
-    version="0.0.1",
+    version="0.0.2",
     author="Wieger Opmeer",
     author_email="pypi@a6502.net",
     description="A RPC-Switch Client",

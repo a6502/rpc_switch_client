@@ -183,7 +183,7 @@ class RPC_Switch_Client:
             return
         # check for future?
         if status == RES_OK:
-            c.set_result(result)
+            c.set_result([status, result])
         elif status == RES_ERROR:
             c.set_exception(RPC_Switch_Client_Error(result))
         else:
